@@ -1,0 +1,97 @@
+name: Deploy Online360
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: online360-production-deploy
+  cancel-in-progress: true
+
+env:
+  APP_NAME: online360
+  APP_DIR: /srv/apps/online360
+  APP_PORT: "3009"
+
+jobs:
+  verify:
+    name: Verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run build
+        env:
+          APP_URL: http://127.0.0.1:3009
+          DATA_DIR: /tmp/data
+
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    needs: verify
+    env:
+      SERVER_HOST: ${{ secrets.SERVER_HOST }}
+      SERVER_USER: ${{ secrets.SERVER_USER }}
+      APP_PUBLIC_URL: ${{ vars.ONLINE360_PUBLIC_URL || 'https://online360.org' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "$SERVER_HOST" >> ~/.ssh/known_hosts
+          printf 'Host server\n  HostName %s\n  User %s\n  IdentityFile ~/.ssh/deploy_key\n' \
+            "$SERVER_HOST" "$SERVER_USER" >> ~/.ssh/config
+
+      - name: Build env file
+        run: |
+          mkdir -p scripts
+          chmod +x scripts/render-production-env.sh
+          ./scripts/render-production-env.sh /tmp/app.env
+
+      - name: Package release
+        run: |
+          tar --format=ustar \
+            --exclude='.git' --exclude='.github' \
+            --exclude='node_modules' --exclude='.next' \
+            --exclude='data' --exclude='.env*' \
+            -czf "/tmp/${APP_NAME}-${GITHUB_SHA}.tar.gz" .
+
+      - name: Upload to server
+        run: |
+          scp /tmp/app.env \
+              "/tmp/${APP_NAME}-${GITHUB_SHA}.tar.gz" \
+              scripts/remote-online360-deploy.sh \
+              server:~/
+
+      - name: Deploy
+        run: |
+          ssh server "
+            set -e
+            install -d -m 750 ${APP_DIR}/shared
+            mv ~/app.env ${APP_DIR}/shared/app.env
+            chmod 600 ${APP_DIR}/shared/app.env
+            chmod +x ~/remote-online360-deploy.sh
+            APP_NAME=${APP_NAME} APP_DIR=${APP_DIR} APP_PORT=${APP_PORT} \
+              ~/remote-online360-deploy.sh ${GITHUB_SHA} ~/${APP_NAME}-${GITHUB_SHA}.tar.gz
+          "
