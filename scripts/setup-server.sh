@@ -65,8 +65,8 @@ if ! sudo -n true 2>/dev/null && ! [ -t 0 ]; then
 
 EOF
   echo "    then: sudo caddy validate --config ${CADDYFILE} && sudo systemctl reload caddy"
-elif grep -q "$APP_HOST" "$CADDYFILE" 2>/dev/null; then
-  echo "==> Caddy already routes ${APP_HOST}, skipping"
+elif grep -q "@online360" "$CADDYFILE" 2>/dev/null; then
+  echo "==> Caddy already routes @online360, skipping"
 else
   echo "==> Adding ${APP_HOST} to ${CADDYFILE}"
   sudo cp "$CADDYFILE" "${CADDYFILE}.bak.online360"
