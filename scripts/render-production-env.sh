@@ -14,7 +14,13 @@ append_env() {
   printf '%s=%s\n' "$name" "$escaped" >> "$OUTPUT_PATH"
 }
 
-# Add app-specific secrets here if needed in the future
-# append_env SOME_SECRET_KEY
+# SMTP Configuration
+append_env SMTP_HOST
+append_env SMTP_PORT
+append_env SMTP_SECURE
+append_env SMTP_USER
+append_env SMTP_PASSWORD
+append_env SMTP_FROM
+append_env SMTP_REPLY_TO
 
 echo "Rendered $(grep -c '=' "$OUTPUT_PATH" || true) env vars to $OUTPUT_PATH"

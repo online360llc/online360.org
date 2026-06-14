@@ -36,6 +36,16 @@ export function getDb() {
     )
   `);
 
+  dbInstance.exec(`
+    CREATE TABLE IF NOT EXISTS contacts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      email TEXT NOT NULL,
+      message TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
   return dbInstance;
 }
 
@@ -48,4 +58,12 @@ export interface Project {
   category: string;
   featured: boolean;
   icon_name: string;
+}
+
+export interface Contact {
+  id: number;
+  name: string;
+  email: string;
+  message: string;
+  created_at: string;
 }
