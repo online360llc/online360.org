@@ -46,8 +46,11 @@ export const metadata: Metadata = {
     description: "Innovative software solutions for data visualization, AI visibility, and digital compliance.",
     creator: "@online360llc",
     images: ["/og-image.png"],
-  },
-  robots: {
+    },
+    other: {
+    "search": "/opensearch.xml",
+    },
+    robots: {
     index: true,
     follow: true,
     googleBot: {

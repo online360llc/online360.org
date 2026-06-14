@@ -81,6 +81,15 @@ const projects = [
     category: 'Finance',
     featured: false,
     icon_name: 'Book'
+  },
+  {
+    slug: 'lifemath',
+    name: 'LifeMath',
+    description: 'The ultimate 30-year financial model for life’s biggest decisions. Compare renting vs buying, model investments, and track long-term wealth growth.',
+    url: 'https://lifemath.online360.org',
+    category: 'Finance',
+    featured: true,
+    icon_name: 'Calculator'
   }
 ];
 
