@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Link from "next/link";
-import { Facebook, Twitter, Youtube, Instagram, Github } from "lucide-react";
+import { Globe, Mail, MapPin } from "lucide-react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     description: "Innovative software solutions for data visualization, AI visibility, and digital compliance.",
     images: [
       {
-        url: "/og-image.png", // We'll assume a standard OG image path
+        url: "/og-image.png",
         width: 1200,
         height: 630,
         alt: "Online360 - Software Innovation",
@@ -60,12 +60,33 @@ export const metadata: Metadata = {
   },
 };
 
+// Social Icons as simple SVGs since Lucide removed them
+const FacebookIcon = ({ size = 20 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+);
+
+const TwitterIcon = ({ size = 20 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"/></svg>
+);
+
+const YoutubeIcon = ({ size = 20 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 2-2h15a2 2 0 0 1 2 2 24.12 24.12 0 0 1 0 10 2 2 0 0 1-2 2h-15a2 2 0 0 1-2-2z"/><path d="m10 15 5-3-5-3z"/></svg>
+);
+
+const InstagramIcon = ({ size = 20 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
+);
+
+const GithubIcon = ({ size = 20 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3.5 1.5a10.8 10.8 0 0 0-5 0C7 2 6 2 6 2c-.28 1.15-.28 2.35 0 3.5-1 1-1.35 2.24-1 3.5 0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+);
+
 const SOCIAL_LINKS = [
-  { name: "Facebook", href: "https://www.facebook.com/online360.org", icon: Facebook },
-  { name: "X", href: "https://x.com/online360llc", icon: Twitter },
-  { name: "YouTube", href: "https://www.youtube.com/@online360llc", icon: Youtube },
-  { name: "Instagram", href: "https://www.instagram.com/online360llc/", icon: Instagram },
-  { name: "GitHub", href: "https://github.com/online360llc", icon: Github },
+  { name: "Facebook", href: "https://www.facebook.com/online360.org", icon: FacebookIcon },
+  { name: "X", href: "https://x.com/online360llc", icon: TwitterIcon },
+  { name: "YouTube", href: "https://www.youtube.com/@online360llc", icon: YoutubeIcon },
+  { name: "Instagram", href: "https://www.instagram.com/online360llc/", icon: InstagramIcon },
+  { name: "GitHub", href: "https://github.com/online360llc", icon: GithubIcon },
 ];
 
 export default function RootLayout({
@@ -132,14 +153,16 @@ export default function RootLayout({
                 <ul className="space-y-4 text-sm text-muted-foreground font-medium">
                   <li><Link href="#about" className="hover:text-primary transition-colors">About Us</Link></li>
                   <li><Link href="#projects" className="hover:text-primary transition-colors">Our Portfolio</Link></li>
-                  <li><Link href="https://github.com/online360llc" target="_blank" className="hover:text-primary transition-colors">Open Source</Link></li>
+                  <li><Link href="https://github.com/online360llc" target="_blank" className="hover:text-primary transition-colors flex items-center gap-2">
+                    <GithubIcon size={14} /> Open Source
+                  </Link></li>
                 </ul>
               </div>
               <div>
                 <h3 className="font-bold text-sm uppercase tracking-widest mb-6">Contact</h3>
                 <ul className="space-y-4 text-sm text-muted-foreground font-medium">
-                  <li>Email: hello@online360.org</li>
-                  <li>Location: Miami, FL</li>
+                  <li className="flex items-center gap-2"><Mail size={14} /> hello@online360.org</li>
+                  <li className="flex items-center gap-2"><MapPin size={14} /> Miami, FL</li>
                 </ul>
               </div>
             </div>
