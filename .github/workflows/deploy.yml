@@ -18,8 +18,8 @@ env:
   APP_PORT: "3009"
 
 jobs:
-  verify:
-    name: Verify
+  build:
+    name: Build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -34,16 +34,35 @@ jobs:
           APP_URL: http://127.0.0.1:3009
           DATA_DIR: /tmp/data
 
+      - name: Package release
+        run: |
+          tar --format=ustar \
+            --exclude='.git' --exclude='.github' \
+            --exclude='node_modules' \
+            --exclude='data' --exclude='.env*' \
+            -czf "/tmp/${APP_NAME}-${GITHUB_SHA}.tar.gz" .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ github.sha }}
+          path: /tmp/${{ env.APP_NAME }}-${{ github.sha }}.tar.gz
+          retention-days: 1
+
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
-    needs: verify
+    needs: build
     env:
       SERVER_HOST: ${{ secrets.SERVER_HOST }}
       SERVER_USER: ${{ secrets.SERVER_USER }}
       APP_PUBLIC_URL: ${{ vars.ONLINE360_PUBLIC_URL || 'https://online360.org' }}
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-${{ github.sha }}
+          path: /tmp
 
       - name: Connect to Tailscale
         uses: tailscale/github-action@v3
@@ -76,14 +95,6 @@ jobs:
           mkdir -p scripts
           chmod +x scripts/render-production-env.sh
           ./scripts/render-production-env.sh /tmp/app.env
-
-      - name: Package release
-        run: |
-          tar --format=ustar \
-            --exclude='.git' --exclude='.github' \
-            --exclude='node_modules' --exclude='.next' \
-            --exclude='data' --exclude='.env*' \
-            -czf "/tmp/${APP_NAME}-${GITHUB_SHA}.tar.gz" .
 
       - name: Upload to server
         run: |

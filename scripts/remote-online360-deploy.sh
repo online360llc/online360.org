@@ -28,16 +28,13 @@ chmod 600 "$RELEASE_ENV"
 cd "$RELEASE_DIR"
 set -a; source "$RELEASE_ENV"; set +a
 
-npm ci --include=dev
-
-# Seed database if it's new (SQLite)
+# App was built in CI. Install deps only on first-run seed; skip on normal deploys.
 if [ ! -f "$SHARED_DIR/data/online360.db" ]; then
   echo "Database not found, seeding..."
+  npm ci --include=dev
   npm run seed
+  npm prune --omit=dev
 fi
-
-npm run build
-npm prune --omit=dev
 
 # --- Next.js Standalone fix: copy public and static into standalone ---
 cp -r public ".next/standalone/public"
