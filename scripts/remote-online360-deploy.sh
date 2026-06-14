@@ -39,12 +39,23 @@ fi
 npm run build
 npm prune --omit=dev
 
+# --- Next.js Standalone fix: copy public and static into standalone ---
+cp -r public ".next/standalone/public"
+cp -r ".next/static" ".next/standalone/.next/static"
+
 ln -sfn "$RELEASE_DIR" "${APP_DIR}/current"
 
 if pm2 describe "$APP_NAME" &>/dev/null; then
-  pm2 restart "$APP_NAME" --update-env
+  # Ensure PM2 is not locked to an old release path
+  OLD_PATH=$(pm2 show "$APP_NAME" | grep "script path" | awk '{print $NF}')
+  if [[ "$OLD_PATH" == *"releases"* ]]; then
+    pm2 delete "$APP_NAME"
+    PORT="${APP_PORT:-3009}" pm2 start "${APP_DIR}/current/.next/standalone/server.js" --name "$APP_NAME" --cwd "${APP_DIR}/current"
+  else
+    pm2 restart "$APP_NAME" --update-env
+  fi
 else
-  PORT="$APP_PORT" pm2 start npm --name "$APP_NAME" --cwd "${APP_DIR}/current" -- start
+  PORT="${APP_PORT:-3009}" pm2 start "${APP_DIR}/current/.next/standalone/server.js" --name "$APP_NAME" --cwd "${APP_DIR}/current"
 fi
 pm2 save
 
