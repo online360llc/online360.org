@@ -99,17 +99,16 @@ jobs:
 
       - name: Upload to server
         run: |
-          scp /tmp/app.env \
-              "/tmp/${APP_NAME}-${GITHUB_SHA}.tar.gz" \
-              scripts/remote-online360-deploy.sh \
-              server:~/
+          scp /tmp/app.env "server:~/${APP_NAME}-${GITHUB_SHA}.env"
+          scp "/tmp/${APP_NAME}-${GITHUB_SHA}.tar.gz" "server:~/${APP_NAME}-${GITHUB_SHA}.tar.gz"
+          scp scripts/remote-online360-deploy.sh server:~/remote-online360-deploy.sh
 
       - name: Deploy
         run: |
           ssh server "
             set -e
             install -d -m 750 ${APP_DIR}/shared
-            mv ~/app.env ${APP_DIR}/shared/app.env
+            mv ~/${APP_NAME}-${GITHUB_SHA}.env ${APP_DIR}/shared/app.env
             chmod 600 ${APP_DIR}/shared/app.env
             chmod +x ~/remote-online360-deploy.sh
             APP_NAME=${APP_NAME} APP_DIR=${APP_DIR} APP_PORT=${APP_PORT} \
