@@ -78,7 +78,7 @@ jobs:
           install -m 700 -d ~/.ssh
           printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H "$SERVER_HOST" >> ~/.ssh/known_hosts
+          ssh-keyscan -v -H "$SERVER_HOST" >> ~/.ssh/known_hosts 2>/tmp/keyscan.err || { cat /tmp/keyscan.err >&2; exit 1; }
           printf 'Host server\n  HostName %s\n  User %s\n  IdentityFile ~/.ssh/deploy_key\n' \
             "$SERVER_HOST" "$SERVER_USER" >> ~/.ssh/config
 
