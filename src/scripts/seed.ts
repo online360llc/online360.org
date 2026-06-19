@@ -1,4 +1,4 @@
-import { getDb } from '../lib/db';
+import { prisma } from '../lib/prisma';
 
 const projects = [
   {
@@ -85,7 +85,7 @@ const projects = [
   {
     slug: 'lifemath',
     name: 'LifeMath',
-    description: 'The ultimate 30-year financial model for life’s biggest decisions. Compare renting vs buying, model investments, and track long-term wealth growth.',
+    description: 'The ultimate 30-year financial model for life\'s biggest decisions. Compare renting vs buying, model investments, and track long-term wealth growth.',
     url: 'https://lifemath.online360.org',
     category: 'Finance',
     featured: true,
@@ -93,29 +93,22 @@ const projects = [
   }
 ];
 
-export function seed() {
-  const db = getDb();
-  
-  const insert = db.prepare(`
-    INSERT OR IGNORE INTO projects (slug, name, description, url, category, featured, icon_name)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-  `);
-
+export async function seed() {
   for (const project of projects) {
-    insert.run(
-      project.slug,
-      project.name,
-      project.description,
-      project.url,
-      project.category,
-      project.featured ? 1 : 0,
-      project.icon_name
-    );
+    await prisma.project.upsert({
+      where: { slug: project.slug },
+      create: project,
+      update: project,
+    });
   }
 
   console.log('Seeded projects into database.');
+  await prisma.$disconnect();
 }
 
 if (require.main === module) {
-  seed();
+  seed().catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
 }

@@ -1,4 +1,5 @@
-import { getDb, Project } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
+import type { Project } from "@/lib/db";
 import { 
   BarChart, 
   Search, 
@@ -55,8 +56,9 @@ const SERVICES = [
 ];
 
 async function getProjects(): Promise<Project[]> {
-  const db = getDb();
-  return db.prepare("SELECT * FROM projects ORDER BY featured DESC, created_at DESC").all() as Project[];
+  return prisma.project.findMany({
+    orderBy: [{ featured: "desc" }, { created_at: "desc" }],
+  }) as Promise<Project[]>;
 }
 
 export default async function HomePage() {
@@ -188,7 +190,7 @@ export default async function HomePage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {projects.map((project) => {
-            const Icon = iconMap[project.icon_name] || BarChart;
+            const Icon = iconMap[project.icon_name ?? ''] || BarChart;
             return (
               <div 
                 key={project.id} 
@@ -211,8 +213,8 @@ export default async function HomePage() {
                     {project.description}
                   </p>
                 </div>
-                <Link 
-                  href={project.url} 
+                <Link
+                  href={project.url ?? '#'}
                   target="_blank"
                   className={`inline-flex items-center font-bold text-base transition-all gap-2 ${project.featured ? 'text-primary' : 'text-foreground'}`}
                 >

@@ -17,7 +17,6 @@ export NVM_DIR="$HOME/.nvm"
 [ -f "$NVM_DIR/nvm.sh" ] || { echo "nvm not found" >&2; exit 1; }
 . "$NVM_DIR/nvm.sh"
 
-mkdir -p "$SHARED_DIR/data"
 mkdir -p "$RELEASE_DIR"
 tar --warning=no-unknown-keyword -xzf "$ARCHIVE" -C "$RELEASE_DIR"
 
@@ -28,13 +27,20 @@ chmod 600 "$RELEASE_ENV"
 cd "$RELEASE_DIR"
 set -a; source "$RELEASE_ENV"; set +a
 
-# App was built in CI. Install deps only on first-run seed; skip on normal deploys.
-if [ ! -f "$SHARED_DIR/data/online360.db" ]; then
-  echo "Database not found, seeding..."
-  npm ci --include=dev
-  npm run seed
-  npm prune --omit=dev
-fi
+npm ci --include=dev
+npx prisma generate
+
+MIGRATE_OUT=$(npx prisma migrate deploy 2>&1) || {
+  if echo "$MIGRATE_OUT" | grep -q "P3005"; then
+    echo "Baselining with 20260619000000_init..."
+    npx prisma migrate resolve --applied 20260619000000_init
+    npx prisma migrate deploy
+  else
+    echo "$MIGRATE_OUT" >&2; exit 1
+  fi
+}
+
+npm prune --omit=dev
 
 # --- Next.js Standalone fix: copy public and static into standalone ---
 cp -r public ".next/standalone/public"

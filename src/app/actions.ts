@@ -1,6 +1,6 @@
 "use server";
 
-import { getDb } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import nodemailer from "nodemailer";
 
 export async function submitContactForm(formData: FormData) {
@@ -14,8 +14,9 @@ export async function submitContactForm(formData: FormData) {
 
   try {
     // 1. Store in Database
-    const db = getDb();
-    db.prepare("INSERT INTO contacts (name, email, message) VALUES (?, ?, ?)").run(name, email, message);
+    await prisma.contact.create({
+      data: { name, email, message },
+    });
 
     // 2. Send Email Notification
     const transporter = nodemailer.createTransport({
