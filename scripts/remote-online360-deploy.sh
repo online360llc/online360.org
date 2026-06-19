@@ -27,7 +27,7 @@ chmod 600 "$RELEASE_ENV"
 cd "$RELEASE_DIR"
 set -a; source "$RELEASE_ENV"; set +a
 
-npm ci --include=dev
+npm ci --omit=dev
 npx prisma generate
 
 MIGRATE_OUT=$(npx prisma migrate deploy 2>&1) || {
