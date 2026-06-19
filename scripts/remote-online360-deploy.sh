@@ -42,11 +42,12 @@ cp -r ".next/static" ".next/standalone/.next/static"
 
 ln -sfn "$RELEASE_DIR" "${APP_DIR}/current"
 
-if pm2 describe "$APP_NAME" &>/dev/null; then
-  pm2 restart "$APP_NAME" --update-env
-else
-  PORT="${APP_PORT:-3009}" pm2 start "${APP_DIR}/current/.next/standalone/server.js" --name "$APP_NAME" --cwd "${APP_DIR}/current"
-fi
+# Always delete and recreate so PM2 picks up the correct standalone server.js
+# (pm2 restart preserves the old start command, which breaks after switching to standalone)
+pm2 delete "$APP_NAME" 2>/dev/null || true
+PORT="${APP_PORT:-3009}" pm2 start "${APP_DIR}/current/.next/standalone/server.js" \
+  --name "$APP_NAME" \
+  --cwd "${APP_DIR}/current"
 pm2 save
 
 for i in $(seq 1 15); do

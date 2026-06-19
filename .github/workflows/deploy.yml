@@ -38,7 +38,7 @@ jobs:
         run: |
           tar --format=ustar \
             --exclude='.git' --exclude='.github' \
-            --exclude='node_modules' \
+            --exclude='./node_modules' \
             --exclude='data' --exclude='.env*' \
             -czf "/tmp/${APP_NAME}-${GITHUB_SHA}.tar.gz" .
 
